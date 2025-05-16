@@ -1,15 +1,12 @@
-
 workflows:
   ios-testflight:
     name: iOS Build & Upload to TestFlight
     max_build_duration: 60
     environment:
       vars:
-        # App Store Connect API Key values should be set here or in UI Secrets
         APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
         APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         APP_STORE_CONNECT_API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
-      node: none
       xcode: latest
       cocoapods: default
       ruby: default
@@ -34,7 +31,6 @@ workflows:
             -exportOptionsPlist ExportOptions.plist
       - name: Upload to TestFlight
         script: |
-          # Save API key to file
           echo "$APP_STORE_CONNECT_API_KEY_P8" > AuthKey.p8
           gem install fastlane
           fastlane pilot upload \
