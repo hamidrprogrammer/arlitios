@@ -23,7 +23,8 @@ workflows:
             -scheme arkitevideo \
             -sdk iphoneos \
             -configuration Release \
-            -archivePath $CM_BUILD_DIR/build/arkitevideo.xcarchive
+            -archivePath $CM_BUILD_DIR/build/arkitevideo.xcarchive \
+            -allowProvisioningUpdates
       - name: Export IPA
         script: |
           xcodebuild -exportArchive \
