@@ -21,6 +21,7 @@ workflows:
           xcodebuild clean archive \
             -project arkitevideo.xcodeproj \
             -scheme arkitevideo \
+            -sdk iphoneos \
             -configuration Release \
             -archivePath $CM_BUILD_DIR/build/arkitevideo.xcarchive
       - name: Export IPA
