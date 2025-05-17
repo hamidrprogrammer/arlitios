@@ -1,27 +1,29 @@
 workflows:
     ios-workflow:
-    name: Custom Workflow
-    environment:
-    groups:
-    - admin
-scripts:
-    - name: Set up keychain to be used for code signing using Codemagic CLI 'keychain' command script: keychain initialize
-    - name: Fetch signing files
-    script: app-store-connect fetch-signing-files "io.iosacademy.iOS-Academy" \
-    --type IOS_APP_STORE \
-    --create
-    - name: Set up signing certificate
-    script: keychain add-certificates
-    - name: Set up code signing settings on Xcode project
-    script: xcode-project use-profiles
-    - name: Build App
-    script: xcode-project build-ipa --workspace "IA.xcworkspace" --scheme "IA"
-artifacts:
-    - build/ios/ipa/*.ipa
-    - /tmp/xcodebuild_logs/*.log
-    - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**.*.dSYM
-publishing:
-    app_store_connect:
-    api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-    key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-    issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        name: Custom Workflow
+        environment:
+            groups:
+                - admin
+        scripts:
+            - name: Set up keychain to be used for code signing using Codemagic CLI 'keychain' command
+              script: keychain initialize
+            - name: Fetch signing files
+              script: |
+                app-store-connect fetch-signing-files "io.iosacademy.iOS-Academy" \
+                --type IOS_APP_STORE \
+                --create
+            - name: Set up signing certificate
+              script: keychain add-certificates
+            - name: Set up code signing settings on Xcode project
+              script: xcode-project use-profiles
+            - name: Build App
+              script: xcode-project build-ipa --workspace "IA.xcworkspace" --scheme "IA"
+        artifacts:
+            - build/ios/ipa/*.ipa
+            - /tmp/xcodebuild_logs/*.log
+            - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**.*.dSYM
+        publishing:
+            app_store_connect:
+                api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+                key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+                issuer_id: $APP_STORE_CONNECT_ISSUER_ID
