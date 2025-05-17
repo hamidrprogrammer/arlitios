@@ -3,12 +3,12 @@ workflows:
     name: iOS Workflow
     environment:
       vars:
-        XCODE_WORKSPACE: "arkitevideo.xcodeproj"  # Updated to .xcodeproj
-        XCODE_SCHEME: "arkitevideo"                   # Verify this in Xcode
-        APP_STORE_APPLE_ID: "QMCS3QNWSP"             # Replace with your App Store Apple ID
+        XCODE_WORKSPACE: "arkitevideo.xcodeproj"  # Ensure this is correct (use .xcworkspace if applicable)
+        XCODE_SCHEME: "arkitevideo"               # Verify this matches your Xcode scheme
+        APP_STORE_APPLE_ID: "QMCS3QNWSP"         # Your App Store Apple ID
       xcode: latest
     integrations:
-      app_store_connect: codemagic        # Replace with your API key reference name
+      app_store_connect: codemagic              # Codemagic-managed App Store Connect integration
     scripts:
       - name: Increment Build Number
         script: |
@@ -16,16 +16,33 @@ workflows:
           cd $CM_BUILD_DIR
           LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
           agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+      - name: Create Export Options Plist
+        script: |
+          echo "Creating export_options.plist"
+          cat <<EOF > export_options.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+           <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>6N7V86QLV3</string>
+            <key>uploadSymbols</key>
+            <true/>
+            <key>compileBitcode</key>
+            <true/>
+           </dict>
+         </plist>
+          EOF
       - name: Build IPA for Distribution
-        script: | 
+        script: |
           xcode-project build-ipa \
-            --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+            --project "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --export-options-plist export_options.plist
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
     publishing:
       app_store_connect:
         auth: integration
