@@ -7,18 +7,9 @@ workflows:
         XCODE_SCHEME: "arkitevideo"
         BUNDLE_ID: "com.hamid.arkit.new"
 
-        APP_STORE_CONNECT_ISSUER_ID: !encrypted |-
-          eyJ2IjogMSwgImRhdGEiOiAiNUY3RTY0MEMtRTRBNy00RTMyLUIzNjQtNjMxMzg1ODE2Mjc1In0=
-        
-        APP_STORE_CONNECT_KEY_IDENTIFIER: !encrypted |-
-          eyJ2IjogMSwgImRhdGEiOiAiNk43Vjg2UUxWMzEifQ==
-        
-        APP_STORE_CONNECT_PRIVATE_KEY: !encrypted |-
-          eyJ2IjogMSwgImRhdGEiOiAiLS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tXG5NSUdUQWdFQU1CTUdCeXFLU00
-          0OUFnRUdDQ3FHU000OUF3RUhCSGt3ZHdJQkFRUWdWVHJLZ1NQQ0l3LzJ4Snp0XG5CQmVCNDExNzdDRFVueXFTMWpaTXVKS
-          W5JTHZTZ0NnWUlLb1pJemowREFRaGVSQU5DQUFUUkxueEgrM3ZqaXRwU1xuQ0psWXRLUFV1MGRvVnNMUnhJUG1tVlZjSlV
-          FVFBGWVR1TDA5SlE1YnZ4UmpuOVZSa01kV1d5SWM0L2J1MThVXG5RVkdycHJ1K1xuLS0tLS1FTkQgUFJJVkFURSBLRVktL
-          S0tLQ==
+        APP_STORE_CONNECT_ISSUER_ID: Encrypted(...)
+        APP_STORE_CONNECT_KEY_IDENTIFIER: Encrypted(...)
+        APP_STORE_CONNECT_PRIVATE_KEY: Encrypted(...)
 
       xcode: latest
 
