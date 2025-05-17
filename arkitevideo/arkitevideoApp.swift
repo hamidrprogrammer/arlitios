@@ -44,18 +44,37 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 // MARK: - Main View Controller
 
 class ARViewController: UIViewController, ARSCNViewDelegate {
-    private let thumbnailScroll = UIScrollView()
     private let arView = ARSCNView()
-    
+    private let debugLabel = UILabel()
+    private let collectionView: UICollectionView
+
     private var mediaItems = [MediaItem]()
     private var referenceImages = Set<ARReferenceImage>()
     private var videoURLsByName = [String: URL]()
-    
+
+    private var thumbnails: [UIImage] = []
+
+    init() {
+        // Layout for bottom thumbnail bar
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.itemSize = CGSize(width: 80, height: 80)
+        layout.minimumLineSpacing = 8
+        layout.sectionInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        self.collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+
+        super.init(nibName: nil, bundle: nil)
+        self.collectionView.dataSource = self
+        self.collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "thumbCell")
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        setupThumbnailScroll()
-        setupARView()
+        view.backgroundColor = .black
+        checkCameraPermission()
+        setupUI()
         fetchMediaItems()
     }
 
@@ -69,33 +88,59 @@ class ARViewController: UIViewController, ARSCNViewDelegate {
         arView.session.pause()
     }
 
-    // MARK: - UI Setup
+    // MARK: - Permissions
 
-    private func setupThumbnailScroll() {
-        thumbnailScroll.translatesAutoresizingMaskIntoConstraints = false
-        thumbnailScroll.showsHorizontalScrollIndicator = false
-        view.addSubview(thumbnailScroll)
-        NSLayoutConstraint.activate([
-            thumbnailScroll.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            thumbnailScroll.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            thumbnailScroll.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            thumbnailScroll.heightAnchor.constraint(equalToConstant: 80)
-        ])
+    private func checkCameraPermission() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            break
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                if !granted {
+                    self.showError("Camera permission denied")
+                }
+            }
+        default:
+            showError("Camera access is needed. Please enable it in Settings.")
+        }
     }
 
-    private func setupARView() {
+    // MARK: - UI Setup
+
+    private func setupUI() {
         arView.delegate = self
         arView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(arView)
+
+        debugLabel.textColor = .white
+        debugLabel.font = .systemFont(ofSize: 12)
+        debugLabel.translatesAutoresizingMaskIntoConstraints = false
+        debugLabel.numberOfLines = 0
+        view.addSubview(debugLabel)
+
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.backgroundColor = .black
+        view.addSubview(collectionView)
+
         NSLayoutConstraint.activate([
-            arView.topAnchor.constraint(equalTo: thumbnailScroll.bottomAnchor),
+            arView.topAnchor.constraint(equalTo: view.topAnchor),
             arView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             arView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            arView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            arView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+
+            collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            collectionView.heightAnchor.constraint(equalToConstant: 100),
+
+            debugLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
+            debugLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
+            debugLabel.bottomAnchor.constraint(equalTo: collectionView.topAnchor, constant: -8)
         ])
     }
 
-    // MARK: - Networking & Data Handling
+    // MARK: - Networking
+
     private func fetchMediaItems() {
         guard let url = URL(string: "https://club.mamakschool.ir/club.backend/ClubAdmin/GetAllImageARGuest") else { return }
 
@@ -106,7 +151,6 @@ class ARViewController: UIViewController, ARSCNViewDelegate {
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
         var body = Data()
-
         let params = [
             "clubId": "0",
             "adminId": "1"
@@ -122,8 +166,13 @@ class ARViewController: UIViewController, ARSCNViewDelegate {
         request.httpBody = body
 
         URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {
-                print("Network error:", error ?? "unknown")
+            if let error = error {
+                self.showError("Network error: \(error.localizedDescription)")
+                return
+            }
+
+            guard let data = data else {
+                self.showError("No data received")
                 return
             }
 
@@ -131,72 +180,62 @@ class ARViewController: UIViewController, ARSCNViewDelegate {
                 let decoded = try JSONDecoder().decode(MediaResponse.self, from: data)
                 let filtered = decoded.data.result
                     .filter { $0.type == "video" }
-                    .compactMap { item in
-                        if let imgStr = item.image,
-                           let vidStr = item.video,
-                           let imgURL = URL(string: imgStr),
-                           let vidURL = URL(string: vidStr) {
-                            return MediaItem(imageUrl: imgURL, videoUrl: vidURL)
+                    .compactMap { raw -> MediaItem? in
+                        guard let img = raw.image, let vid = raw.video,
+                              let imgURL = URL(string: img), let vidURL = URL(string: vid) else {
+                            return nil
                         }
-                        return nil
+                        return MediaItem(imageUrl: imgURL, videoUrl: vidURL)
                     }
 
                 DispatchQueue.main.async {
                     self.mediaItems = filtered
-                    filtered.forEach { self.downloadReferenceImage(for: $0) }
+                    self.downloadReferenceImages()
                 }
+
             } catch {
-                print("JSON parse error:", error)
+                self.showError("JSON decode error: \(error.localizedDescription)")
             }
         }.resume()
     }
 
-    private func downloadReferenceImage(for item: MediaItem) {
-        URLSession.shared.dataTask(with: item.imageUrl) { data, _, err in
-            guard let data = data, err == nil,
-                  let uiImage = UIImage(data: data),
-                  let cgImage = uiImage.cgImage else {
-                print("Image download failed:", err ?? "unknown")
-                return
-            }
+    private func downloadReferenceImages() {
+        for item in mediaItems {
+            URLSession.shared.dataTask(with: item.imageUrl) { data, _, error in
+                guard let data = data, error == nil,
+                      let image = UIImage(data: data),
+                      let cgImage = image.cgImage else {
+                    self.showError("Image download failed: \(error?.localizedDescription ?? "unknown")")
+                    return
+                }
 
-            let refImage = ARReferenceImage(cgImage, orientation: .up, physicalWidth: 0.2)
-            let name = item.imageUrl.absoluteString
-            refImage.name = name
-            self.referenceImages.insert(refImage)
-            self.videoURLsByName[name] = item.videoUrl
+                let refImage = ARReferenceImage(cgImage, orientation: .up, physicalWidth: 0.2)
+                refImage.name = item.imageUrl.absoluteString
 
-            DispatchQueue.main.async {
-                self.addThumbnail(uiImage)
-                self.runARSession()
-            }
-        }.resume()
-    }
-
-    // MARK: - Thumbnails
-
-    private var thumbX: CGFloat = 8
-    private func addThumbnail(_ image: UIImage) {
-        let thumbSize: CGFloat = 64
-        let imageView = UIImageView(image: image)
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.layer.borderWidth = 1
-        imageView.layer.borderColor = UIColor.white.cgColor
-        imageView.frame = CGRect(x: thumbX, y: 8, width: thumbSize, height: thumbSize)
-        thumbnailScroll.addSubview(imageView)
-        thumbX += thumbSize + 8
-        thumbnailScroll.contentSize = CGSize(width: thumbX, height: 80)
+                DispatchQueue.main.async {
+                    self.referenceImages.insert(refImage)
+                    self.videoURLsByName[item.imageUrl.absoluteString] = item.videoUrl
+                    self.thumbnails.append(image)
+                    self.collectionView.reloadData()
+                    self.runARSession()
+                }
+            }.resume()
+        }
     }
 
     // MARK: - AR Session
 
     private func runARSession() {
-        guard !referenceImages.isEmpty else { return }
+        guard !referenceImages.isEmpty else {
+            showError("No reference images loaded")
+            return
+        }
+
         let config = ARImageTrackingConfiguration()
         config.trackingImages = referenceImages
         config.maximumNumberOfTrackedImages = referenceImages.count
         arView.session.run(config, options: [.removeExistingAnchors, .resetTracking])
+        debugLabel.text = "AR session started. Loaded: \(referenceImages.count) images."
     }
 
     // MARK: - ARSCNViewDelegate
@@ -204,9 +243,7 @@ class ARViewController: UIViewController, ARSCNViewDelegate {
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         guard let imageAnchor = anchor as? ARImageAnchor,
               let name = imageAnchor.referenceImage.name,
-              let videoURL = videoURLsByName[name] else {
-            return
-        }
+              let videoURL = videoURLsByName[name] else { return }
 
         let playerItem = AVPlayerItem(url: videoURL)
         let player = AVPlayer(playerItem: playerItem)
@@ -214,9 +251,10 @@ class ARViewController: UIViewController, ARSCNViewDelegate {
         let videoNode = SKVideoNode(avPlayer: player)
         videoNode.play()
 
-        let skScene = SKScene(size: CGSize(width: 1024, height: 1024))
-        videoNode.position = CGPoint(x: skScene.size.width/2, y: skScene.size.height/2)
-        videoNode.size = skScene.size
+        let videoSize = CGSize(width: 1024, height: 1024)
+        let skScene = SKScene(size: videoSize)
+        videoNode.position = CGPoint(x: videoSize.width / 2, y: videoSize.height / 2)
+        videoNode.size = videoSize
         skScene.addChild(videoNode)
 
         let plane = SCNPlane(
@@ -229,5 +267,32 @@ class ARViewController: UIViewController, ARSCNViewDelegate {
         let planeNode = SCNNode(geometry: plane)
         planeNode.eulerAngles.x = -.pi / 2
         node.addChildNode(planeNode)
+    }
+
+    // MARK: - Helpers
+
+    private func showError(_ message: String) {
+        DispatchQueue.main.async {
+            self.debugLabel.text = "⚠️ \(message)"
+        }
+    }
+}
+
+// MARK: - CollectionView
+
+extension ARViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return thumbnails.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "thumbCell", for: indexPath)
+        cell.contentView.subviews.forEach { $0.removeFromSuperview() }
+        let imageView = UIImageView(image: thumbnails[indexPath.item])
+        imageView.frame = cell.contentView.bounds
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        cell.contentView.addSubview(imageView)
+        return cell
     }
 }
