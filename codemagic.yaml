@@ -5,10 +5,10 @@ workflows:
       vars:
         XCODE_WORKSPACE: "ios/arkitevideo.xcodeproj"  # Updated to .xcodeproj
         XCODE_SCHEME: "arkitevideo"                   # Verify this in Xcode
-        APP_STORE_APPLE_ID: "1234567890"             # Replace with your App Store Apple ID
+        APP_STORE_APPLE_ID: "QMCS3QNWSP"             # Replace with your App Store Apple ID
       xcode: latest
     integrations:
-      app_store_connect: appstore_connect_key        # Replace with your API key reference name
+      app_store_connect: codemagic        # Replace with your API key reference name
     scripts:
       - name: Increment Build Number
         script: |
