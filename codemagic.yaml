@@ -26,8 +26,8 @@ workflows:
            <dict>
             <key>method</key>
             <string>app-store</string>
-            <key>signingStyle</key>
-            <string>automatic</string>
+            <key>teamID</key>
+            <string>QMCS3QNWSP</string>>
             <key>uploadSymbols</key>
             <true/>
             <key>compileBitcode</key>
