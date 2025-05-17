@@ -3,16 +3,15 @@ workflows:
     name: iOS Build for TestFlight
     instance_type: mac_mini_m1
     integrations:
-      app_store_connect: Mehdi
+      app_store_connect: Mehdi  # API key integration name
     environment:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.hamid.arkit.new
-        auth: app_store_connect  # Required for automatic signing
     scripts:
-      - name: Set Up Automatic Signing
+      - name: Setup Code Signing
         script: |
-          xcode-project use-profiles
+          xcode-project use-profiles  # Generates/fetches provisioning profiles
           xcode-project set-code-sign-style \
             --project "ios/arkitevideo.xcodeproj" \
             --code_sign_style "Automatic"
@@ -23,3 +22,9 @@ workflows:
             --project "ios/arkitevideo.xcodeproj" \
             --scheme "arkitevideo" \
             --archive-xcargs "-allowProvisioningUpdates"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration  # <-- Authentication goes here instead
+        submit_to_testflight: true
