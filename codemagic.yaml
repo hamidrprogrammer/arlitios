@@ -38,6 +38,11 @@ workflows:
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO
 
+          xcodebuild -exportArchive \
+          -archivePath build/arkitevideo.xcarchive \
+          -exportOptionsPlist ExportOptions.plist \
+          -exportPath build/ios/ipa
+
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
