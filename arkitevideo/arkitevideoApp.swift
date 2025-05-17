@@ -206,7 +206,7 @@ class ARViewController: UIViewController, ARSCNViewDelegate {
 
             do {
                 let decoded = try JSONDecoder().decode(MediaResponse.self, from: data)
-                let filtered = decoded.data.result
+                let filtered = decoded.data.dataContent
                     .filter { $0.type == "video" }
                     .compactMap { raw -> MediaItem? in
                         guard let img = raw.image, let vid = raw.video,
