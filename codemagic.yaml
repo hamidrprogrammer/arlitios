@@ -45,7 +45,7 @@ workflows:
            COMPILER_INDEX_STORE_ENABLE=NO \
            DEVELOPMENT_TEAM=QMCS3QNWSP \
            CODE_SIGN_STYLE=Manual \
-           CODE_SIGN_IDENTITY="Apple Distribution" \
+           CODE_SIGN_IDENTITY="development" \
            PROVISIONING_PROFILE_SPECIFIER="Mehdi3"
     artifacts:
       - build/ios/ipa/*.ipa
