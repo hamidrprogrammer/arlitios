@@ -11,13 +11,26 @@ workflows:
         bundle_identifier: com.hamid.arkit.new
     scripts:
       - name: Set up code signing settings on Xcode project
-        script: xcode-project use-profiles
-      - name: Build App
-        script: xcode-project build-ipa --workspace "arkitevideo.xcodeproj" --scheme "arkitevideo"
+        script: |
+          xcode-project use-profiles \
+            --project "arkitevideo.xcodeproj"
+      - name: Verify schemes & show Build Settings
+        script: |
+          xcodebuild -list \
+            -project arkitevideo.xcodeproj
+          xcodebuild \
+            -project arkitevideo.xcodeproj \
+            -scheme arkitevideo \
+            -showBuildSettings
+      - name: Build App (.ipa)
+        script: |
+          xcode-project build-ipa \
+            --project "arkitevideo.xcodeproj" \
+            --scheme "arkitevideo"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**.*.dSYM
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
