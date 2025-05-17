@@ -45,7 +45,8 @@ workflows:
            -destination "generic/platform=iOS" \
            COMPILER_INDEX_STORE_ENABLE=NO \
            DEVELOPMENT_TEAM=QMCS3QNWSP \
-           CODE_SIGN_STYLE=Auto 
+           CODE_SIGN_STYLE=Automatic \
+           -allowProvisioningUpdates
            
     artifacts:
       - build/ios/ipa/*.ipa
