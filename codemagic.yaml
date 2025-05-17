@@ -1,43 +1,27 @@
 workflows:
   ios-workflow:
-    name: iOS Workflow
-
+    name: iOS Build for TestFlight
     integrations:
-      app_store_connect: codemagic
-
+      app_store_connect: codemagic  # اسمی که توی Codemagic برای API Key گذاشتی
     environment:
-      vars:
-        APP_STORE_APPLE_ID: 6738909278
-        DEVELOPMENT_TEAM: $CM_DEVELOPMENT_TEAM
-
+      ios_signing:
+        distribution_type: app_store  # برای TestFlight باید app_store باشه
+        bundle_identifier: com.hamid.arkit.new
     scripts:
-      - name: Set up code signing settings on Xcode project
-        script: xcode-project use-profiles
-
-      - name: Increment build number
+      - name: تنظیم امضای خودکار
         script: |
-          cd $CM_BUILD_DIR
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
-          agvtool new-version -all $((LATEST_BUILD_NUMBER + 1))
-
-      - name: Build IPA for distribution
+          xcode-project set-code-sign-style \
+            --project "ios/arkitevideo.xcodeproj" \  # اسم پروژه‌ات رو بذار (مثلاً ios/MyApp.xcodeproj)
+            --style "Automatic"
+      - name: ساخت IPA
         script: |
-          cd $CM_BUILD_DIR
-          xcodebuild \
-            -project arkitevideo.xcodeproj \
-            -scheme arkitevideo \
-            -configuration Release \
-            -destination "generic/platform=iOS" \
-            -archivePath "./build/arkitevideo.xcarchive" \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            archive \
-            -allowProvisioningUpdates
-
-      - name: Export IPA
-        script: |
-          xcodebuild -exportArchive \
-            -archivePath "./build/arkitevideo.xcarchive" \
-            -exportOptionsPlist exportOptions.plist \
-            -exportPath "./build" \
-            -allowProvisioningUpdates
+          xcode-project build-ipa \
+            --project "ios/arkitevideo.xcodeproj" \  # اسم پروژه‌ات
+            --scheme "arkitevideo" \  # اسم scheme پروژه‌ات (توی Xcode قابل دیدنه)
+            --archive-xcargs "-allowProvisioningUpdates"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        api_key: codemagic  # همون اسم API Key
+        submit_to_testflight: true
