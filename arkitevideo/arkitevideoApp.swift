@@ -6,17 +6,45 @@ import AVFoundation
 // MARK: - Models
 
 struct MediaResponse: Codable {
+    let status: Int
     let data: MediaData
+    let message: String
 }
 
 struct MediaData: Codable {
-    let result: [MediaItemRaw]
+     let state: Int
+    let dataContent: [MediaItemRaw]
 }
 
 struct MediaItemRaw: Codable {
+   let clubId: Int
+    let adminId: Int
+    let name: String
+    let video: String
+    let object: String
+    let mapLa: String
+    let mapLo: String
+    let card: String? // null allowed
+    let image: String
+    let isRemoved: Bool
+    let isPassword: Bool
     let type: String
-    let image: String?
-    let video: String?
+    let fullName: String
+    let instagram: String
+    let facebook: String
+    let twitter: String
+    let email: String
+    let phone: String
+    let avatar: String
+    let description: String
+    let latitude: String
+    let longitude: String
+    let addressSite: String
+    let ytb: String
+    let seen: Int
+    let id: Int
+    let insertTime: String
+    let updateTime: String?
 }
 
 struct MediaItem {
