@@ -1,119 +1,35 @@
 workflows:
-
-  ios-native-workflow:
-
-    name: iOS Native
-
-    max_build_duration: 120
-
-    instance_type: mac_mini_m2
-
-    integrations:
-
-      app_store_connect: codemagic
-
+  ios-workflow:
+    name: iOS Workflow
     environment:
-
-      ios_signing:
-
-        distribution_type: development
-
-        bundle_identifier: om.golstan.arkit.new.Zauber
-
       vars:
-
-        BUNDLE_ID: om.golstan.arkit.new.Zauber
-
-        XCODE_WORKSPACE: "arkitevideo.xcworkspace" # <-- Put the name of your Xcode workspace here
-
-        XCODE_SCHEME: "arkitevideo" # <-- Put the name of your Xcode scheme here
-
-        APP_STORE_APPLE_ID: 1555555551
-
+        XCODE_WORKSPACE: "arkitevideo.xcworkspace"  # Replace with your workspace name
+        XCODE_SCHEME: "arkitevideo"               # Replace with your scheme name
+        APP_STORE_APPLE_ID: "QMCS3QNWSP"      # Replace with your App Store Apple ID from App Store Connect
       xcode: latest
-
-      cocoapods: default
-
+    integrations:
+      app_store_connect: macosgitube  # Reference name of your App Store Connect API key
     scripts:
-
-      - name: Install CocoaPods dependencies
-
-        script: | 
-
+      - name: Install Dependencies
+        script: |
           pod install
-
-      - name: Set up provisioning profiles settings on Xcode project
-
-        script: xcode-project use-profiles
-
-      - name: Increment build number
-
-        script: | 
-
+      - name: Increment Build Number
+        script: |
+          #!/bin/sh
           cd $CM_BUILD_DIR
-
           LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
-
           agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
-
-      - name: Build ipa for distribution
-
-        script: | 
-
+      - name: Build IPA for Distribution
+        script: |
           xcode-project build-ipa \
-
-            --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" \
-
-            --scheme "$XCODE_SCHEME"
-
+            --workspace "ios/$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --export-options '{"testFlightInternalTestingOnly": true}'  # For internal testing
     artifacts:
-
       - build/ios/ipa/*.ipa
-
-      - /tmp/xcodebuild_logs/*.log
-
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
-
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
-
     publishing:
-
-      email:
-
-        recipients:
-
-          - user_1@example.com
-
-          - user_2@example.com
-
-        notify:
-
-          success: true
-
-          failure: false
-
       app_store_connect:
-
         auth: integration
-
-
-
-        # Configuration related to TestFlight (optional)
-
-        # Note: This action is performed during post-processing.
-
-        submit_to_testflight: true
-
-        beta_groups: # Specify the names of beta tester groups that will get access to the build once it has passed beta review.
-
-          - group name 1
-
-          - group name 2
-
-
-
-        # Configuration related to App Store (optional)
-
-        # Note: This action is performed during post-processing.
-
-        submit_to_app_store: false
+        submit_to_testflight: true  # Submit to TestFlight beta review
+        beta_groups:               # Optional: Add beta groups for external testers
+          - "Beta Testers Group"
