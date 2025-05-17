@@ -5,4 +5,4 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store # or: ad_hoc | development | enterprise
-        bundle_identifier: com.hamid.arkit.new
+        bundle_identifier: om.golstan.arkit.new.Zauber
