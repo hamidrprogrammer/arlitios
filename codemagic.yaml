@@ -27,7 +27,7 @@ workflows:
             <key>method</key>
             <string>app-store</string>
             <key>teamID</key>
-            <string>QMCS3QNWSP</string>>
+            <string>QMCS3QNWSP</string>
             <key>uploadSymbols</key>
             <true/>
             <key>compileBitcode</key>
