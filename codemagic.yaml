@@ -33,6 +33,7 @@ workflows:
         script: | 
           xcodebuild -project arkitevideo.xcodeproj \
            -scheme arkitevideo \
+           -destination "generic/platform=iOS" \
            -configuration Release \
            -archivePath ./build/arkitevideo.xcarchive \
            archive
