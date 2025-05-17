@@ -36,6 +36,12 @@ workflows:
           -scheme arkitevideo \
           -configuration Release \
           -sdk iphoneos \
+       - name: Log Output directories
+          script: |
+           echo "$CM_BUILD_DIR"
+           ls $CM_BUILD_DIR 
+           echo "search for ipa"
+           find "$CM_BUILD_DIR" -type f -name "*.ipa"   
           
          
 
