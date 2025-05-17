@@ -10,9 +10,6 @@ workflows:
     integrations:
       app_store_connect: codemagic  # Reference name of your App Store Connect API key
     scripts:
-      - name: Install Dependencies
-        script: |
-          pod install
       - name: Increment Build Number
         script: |
           #!/bin/sh
