@@ -1,44 +1,43 @@
 workflows:
-
   ios-workflow:
     name: iOS Workflow
+
     integrations:
       app_store_connect: codemagic
 
     environment:
       vars:
         APP_STORE_APPLE_ID: 6738909278
-        # Your 10-character Team ID (e.g. "1A2B3C4D5E")
         DEVELOPMENT_TEAM: $CM_DEVELOPMENT_TEAM
-      # If you prefer automatic signing on the xcodebuild CLI:
-      scripts:
-        - name: Set up code signing settings on Xcode project
-          script: xcode-project use-profiles
 
-        - name: Increment build number
-          script: |
-            cd $CM_BUILD_DIR
-            LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
-            agvtool new-version -all $((LATEST_BUILD_NUMBER + 1))
+    scripts:
+      - name: Set up code signing settings on Xcode project
+        script: xcode-project use-profiles
 
-        - name: Build IPA for distribution
-          script: |
-            cd $CM_BUILD_DIR
-            xcodebuild \
-              -project arkitevideo.xcodeproj \
-              -scheme arkitevideo \
-              -configuration Release \
-              -destination "generic/platform=iOS" \
-              -archivePath "./build/arkitevideo.xcarchive" \
-              CODE_SIGN_STYLE=Automatic \
-              DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-              archive \
-              -allowProvisioningUpdates
+      - name: Increment build number
+        script: |
+          cd $CM_BUILD_DIR
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
+          agvtool new-version -all $((LATEST_BUILD_NUMBER + 1))
 
-        - name: Export IPA
-          script: |
-            xcodebuild -exportArchive \
-              -archivePath "./build/arkitevideo.xcarchive" \
-              -exportOptionsPlist exportOptions.plist \
-              -exportPath "./build" \
-              -allowProvisioningUpdates
+      - name: Build IPA for distribution
+        script: |
+          cd $CM_BUILD_DIR
+          xcodebuild \
+            -project arkitevideo.xcodeproj \
+            -scheme arkitevideo \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "./build/arkitevideo.xcarchive" \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            archive \
+            -allowProvisioningUpdates
+
+      - name: Export IPA
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath "./build/arkitevideo.xcarchive" \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath "./build" \
+            -allowProvisioningUpdates
