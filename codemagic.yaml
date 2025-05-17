@@ -2,7 +2,7 @@ workflows:
   ios-workflow:
     name: Custom Workflow
     integrations:
-      app_store_connect: codemagicY
+      app_store_connect: codemagic
     environment:
       groups:
         - admin
