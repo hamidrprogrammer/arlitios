@@ -33,7 +33,7 @@ workflows:
             <key>compileBitcode</key>
             <true/>
            </dict>
-         </plist>
+          </plist>
           EOF
       - name: Build IPA for Distribution
         script: |
