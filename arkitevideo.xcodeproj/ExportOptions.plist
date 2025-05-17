@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
- "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
+ <dict>
   <key>method</key>
   <string>app-store</string>
   <key>teamID</key>
-  <string>6N7V86QLV3</string>
+  <string>QMCS3QNWSP</string>
   <key>uploadSymbols</key>
   <true/>
   <key>compileBitcode</key>
   <true/>
-</dict>
+  <key>provisioningProfiles</key>
+  <dict>
+   <key>com.yourcompany.arkitevideo</key> <!-- Replace with your app’s bundle ID -->
+   <string>Your Provisioning Profile Name</string> <!-- Replace with the profile name -->
+  </dict>
+ </dict>
 </plist>
