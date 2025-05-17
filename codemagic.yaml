@@ -12,21 +12,28 @@ workflows:
     scripts:
       - name: Set up code signing settings on Xcode project
         script: |
+          # explicitly point use‑profiles at your .xcodeproj
           xcode-project use-profiles \
-            --project "arkitevideo.xcodeproj"
+            --project "/Users/builder/clone/arkitevideo.xcodeproj"
       - name: Verify schemes & show Build Settings
         script: |
+          cd /Users/builder/clone
+          # list available schemes
           xcodebuild -list \
             -project arkitevideo.xcodeproj
+          # dump build settings to ensure everything’s wired up
           xcodebuild \
             -project arkitevideo.xcodeproj \
             -scheme arkitevideo \
             -showBuildSettings
-      - name: Build App (.ipa)
+      - name: Build App (.ipa) for App Store
         script: |
+          cd /Users/builder/clone
           xcode-project build-ipa \
             --project "arkitevideo.xcodeproj" \
-            --scheme "arkitevideo"
+            --scheme "arkitevideo" \
+            --configuration Release \
+            --export-method app-store
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
