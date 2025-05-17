@@ -20,11 +20,11 @@ workflows:
 
         distribution_type: app_store
 
-        bundle_identifier: QMCS3QNWSP.com.hamid.arkit.new
+        bundle_identifier: om.golstan.arkit.new.Zauber
 
       vars:
 
-        BUNDLE_ID: QMCS3QNWSP.com.hamid.arkit.new
+        BUNDLE_ID: om.golstan.arkit.new.Zauber
 
         XCODE_WORKSPACE: "CodemagicSample.xcworkspace" # <-- Put the name of your Xcode workspace here
 
