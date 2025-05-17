@@ -8,7 +8,7 @@ workflows:
         APP_STORE_APPLE_ID: "QMCS3QNWSP"      # Replace with your App Store Apple ID from App Store Connect
       xcode: latest
     integrations:
-      app_store_connect: macosgitube  # Reference name of your App Store Connect API key
+      app_store_connect: HamidRezaAR  # Reference name of your App Store Connect API key
     scripts:
       - name: Install Dependencies
         script: |
