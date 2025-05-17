@@ -14,8 +14,9 @@ workflows:
         script: |
           xcode-project use-profiles \
             --project "/Users/builder/clone/arkitevideo.xcodeproj"
+
       - name: Set up provisioning profiles settings on Xcode project
-        script: xcode-project use-profiles      
+        script: xcode-project use-profiles
 
       - name: Verify schemes & dump Build Settings
         script: |
@@ -32,22 +33,26 @@ workflows:
         script: |
           cd /Users/builder/clone
           xcodebuild clean archive \
-          -project arkitevideo.xcodeproj \
-          -scheme arkitevideo \
-          -configuration Release \
-          -sdk iphoneos \
+            -project arkitevideo.xcodeproj \
+            -scheme arkitevideo \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath $CM_BUILD_DIR/arkitevideo.xcarchive
+          xcodebuild -exportArchive \
+            -archivePath $CM_BUILD_DIR/arkitevideo.xcarchive \
+            -exportPath $CM_BUILD_DIR/exported \
+            -exportOptionsPlist ExportOptions.plist
+
       - name: Log Output directories
         script: |
-           echo "$CM_BUILD_DIR"
-           ls $CM_BUILD_DIR 
-           echo "search for ipa"
-           find "$CM_BUILD_DIR" -type f -name "*.ipa"   
-          
-         
-
+          echo "Build directory: $CM_BUILD_DIR"
+          ls "$CM_BUILD_DIR"
+          echo "Searching for .ipa..."
+          find "$CM_BUILD_DIR" -type f -name "*.ipa"
 
     artifacts:
       - build/ios/ipa/*.ipa
+      - $CM_BUILD_DIR/**/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
 
@@ -60,12 +65,8 @@ workflows:
           failure: false
       app_store_connect:
         auth: integration
-        submit_to_testflight: true 
-        beta_groups: # Specify the names of beta tester groups that will get access to the build once it has passed beta review.
+        submit_to_testflight: true
+        beta_groups:
           - group name 1
           - group name 2
-
-        # Configuration related to App Store (optional)
-        # Note: This action is performed during post-processing.
         submit_to_app_store: false
-        
