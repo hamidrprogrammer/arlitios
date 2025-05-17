@@ -20,9 +20,11 @@ workflows:
         
       - name: Increment build number
         script: | 
-          cd $CM_BUILD_DIR
+          cd /Users/builder/clone  # Navigate to project directory
           LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "6738909278")
           agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+          CURRENT_BUILD_NUMBER=$(agvtool what-version -terse)
+          echo "Updated build number: $CURRENT_BUILD_NUMBER"
 
       - name: Verify schemes & dump Build Settings
         script: |
