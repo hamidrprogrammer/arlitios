@@ -3,28 +3,23 @@ workflows:
     name: iOS Workflow
     environment:
       vars:
-        XCODE_WORKSPACE: "arkitevideo.xcodeproj"  # Updated to .xcodeproj
-        XCODE_SCHEME: "arkitevideo"                   # Verify this in Xcode
-        APP_STORE_APPLE_ID: "QMCS3QNWSP"             # Replace with your App Store Apple ID
-      xcode: latest
+        XCODE_WORKSPACE: "arkitevideo.xcodeproj"
+        XCODE_SCHEME:    "arkitevideo"
+        APP_STORE_APPLE_ID: "QMCS3QNWSP"
+    xcode: latest
     integrations:
-      app_store_connect: codemagic        # Replace with your API key reference name
+      app_store_connect: codemagic
     scripts:
       - name: Increment Build Number
         script: |
-          #!/bin/sh
           cd $CM_BUILD_DIR
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
-          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
-      - name: Build IPA for Distribution
-        script: |
-          xcode-project build-ipa \
-            --project "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
-            --export-options '{"testFlightInternalTestingOnly": true}'
+          LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
+          agvtool new-version -all $((LATEST + 1))
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
+    export_options:
+      testFlightInternalTestingOnly: true
