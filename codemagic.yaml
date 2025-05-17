@@ -37,6 +37,7 @@ workflows:
            -configuration Release \
            -archivePath ./build/arkitevideo.xcarchive \
            archive
+           -allowProvisioningUpdates
 
 
     
