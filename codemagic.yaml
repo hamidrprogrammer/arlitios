@@ -1,32 +1,33 @@
 workflows:
-  ios-workflow:
-    name: iOS Workflow
+  ios-distribute:
+    name: iOS Build and Distribute
     environment:
       vars:
-        XCODE_WORKSPACE: "arkitevideo.xcworkspace"  # Replace with your workspace name
-        XCODE_SCHEME: "arkitevideo"               # Replace with your scheme name
-        APP_STORE_APPLE_ID: "QMCS3QNWSP"      # Replace with your App Store Apple ID from App Store Connect
+        XCODE_PROJECT: "arkitevideo.xcodeproj"
+        XCODE_SCHEME: "arkitevideo"
       xcode: latest
-    integrations:
-      app_store_connect: codemagic  # Reference name of your App Store Connect API key
     scripts:
-      - name: Increment Build Number
+      - name: Set build number from Git
         script: |
-          #!/bin/sh
           cd $CM_BUILD_DIR
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
-          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
-      - name: Build IPA for Distribution
+          agvtool new-version -all $(($(git rev-list --count HEAD) + 1))
+
+      - name: Build IPA
         script: |
           xcode-project build-ipa \
-            --workspace "ios/$XCODE_WORKSPACE" \
+            --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --export-options '{"testFlightInternalTestingOnly": true}'  # For internal testing
+            --export-options-plist exportOptions.plist
+
     artifacts:
       - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
     publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true  # Submit to TestFlight beta review
-        beta_groups:               # Optional: Add beta groups for external testers
-          - "Beta Testers Group"
+      email:
+        recipients:
+          - your@email.com
+        notify:
+          success: true
+          failure: true
