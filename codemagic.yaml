@@ -1,27 +1,42 @@
 workflows:
-
-  ios-workflow:
-
-    name: iOS Workflow
-
-    
-
-    # ....
-
-    
-
+  ios-release:
+    name: iOS Release Workflow
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: codemagic  # Name of the App Store Connect integration key in Codemagic
     environment:
-
+      xcode: latest
+      cocoapods: default
+      vars:
+        BUNDLE_ID: "com.hamid.arkit.new"     # Your app’s bundle identifier
+        XCODE_WORKSPACE: "arkitevideo.xcodeproj"         # Name of your Xcode workspace (if using CocoaPods)
+        XCODE_SCHEME: "arkitevideo"                        # Name of your Xcode scheme
       ios_signing:
-
-        provisioning_profiles:
-
-          - Mehdi3
-
-          # - ...
-
-        certificates:
-
-          - HamidReza2
-
-          # - ...
+        distribution_type: app_store               # Using App Store distribution (for TestFlight/App Store)
+        bundle_identifier: $BUNDLE_ID
+    scripts:
+      - name: Install dependencies
+        script: |
+          set -o pipefail
+          if [ -f Podfile ]; then 
+            pod install 
+          else 
+            echo "No Podfile found, skipping CocoaPods"
+          fi
+      - name: Set up code signing on project
+        script: xcode-project use-profiles
+      - name: Build IPA for distribution
+        script: |
+          xcode-project build-ipa \
+            --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
