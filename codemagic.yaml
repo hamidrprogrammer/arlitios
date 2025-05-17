@@ -41,7 +41,7 @@ workflows:
           xcodebuild -exportArchive \
             -archivePath $CM_BUILD_DIR/arkitevideo.xcarchive \
             -exportPath $CM_BUILD_DIR/exported \
-            -exportOptionsPlist ExportOptions.plist
+            -exportOptionsPlist /Users/builder/export_options.plist
 
       - name: Log Output directories
         script: |
