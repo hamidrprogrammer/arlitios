@@ -12,11 +12,10 @@ workflows:
     scripts:
       - name: Set up code signing settings on Xcode project
         script: |
-          # point use‑profiles at the .xcodeproj, not a workspace
           xcode-project use-profiles \
             --project "/Users/builder/clone/arkitevideo.xcodeproj"
 
-      - name: Verify schemes & show Build Settings
+      - name: Verify schemes & dump Build Settings
         script: |
           cd /Users/builder/clone
           xcodebuild -list \
@@ -24,6 +23,7 @@ workflows:
           xcodebuild \
             -project arkitevideo.xcodeproj \
             -scheme arkitevideo \
+            -sdk iphoneos \
             -showBuildSettings
 
       - name: Build App (.ipa)
@@ -31,7 +31,8 @@ workflows:
           cd /Users/builder/clone
           xcode-project build-ipa \
             --project "arkitevideo.xcodeproj" \
-            --scheme "arkitevideo"
+            --scheme "arkitevideo" \
+            --xcargs "-sdk iphoneos"
 
     artifacts:
       - build/ios/ipa/*.ipa
