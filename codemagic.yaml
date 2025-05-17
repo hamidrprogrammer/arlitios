@@ -1,18 +1,37 @@
 workflows:
   ios-workflow:
-    name: iOS Build
+    name: iOS Build and Distribute
     environment:
       xcode: latest
       vars:
         BUNDLE_ID: "com.ashen.testapp"
-        APP_STORE_CONNECT_ISSUER_ID: Encrypted(...)
-        APP_STORE_CONNECT_KEY_IDENTIFIER: Encrypted(...)
-        APP_STORE_CONNECT_PRIVATE_KEY: Encrypted(...)
+        APP_STORE_CONNECT_ISSUER_ID: 5f7e640c-e4a7-4e32-b364-631385816275
+        APP_STORE_CONNECT_KEY_IDENTIFIER: 6N7V86QLV3
+        APP_STORE_CONNECT_PRIVATE_KEY: |
+          -----BEGIN PRIVATE KEY-----
+          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgVTrKgSPCIw/2xJzt
+          BBeB4117CDUayqS1jZMuJInIlvSgCgYIKoZIzj0DAQehRANCAATRLnxH+3vjitpS
+          CJlYtKPUu0doVsLRxIPmmVVcjUGETPFYTuL09JQ5bvxRjn9VRkMdVWyIc4/bu18U
+          QVGrpru+
+          -----END PRIVATE KEY-----
     scripts:
-      - name: Build ipa
-        script: xcodebuild -workspace MyApp.xcworkspace -scheme MyApp -sdk iphoneos -configuration Release archive -archivePath $HOME/build/MyApp.xcarchive
-      - name: Export ipa
-        script: xcodebuild -exportArchive -archivePath $HOME/build/MyApp.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath $HOME/build/ipa
+      - name: Install dependencies
+        script: |
+          gem install cocoapods
+          pod install
+      - name: Build archive
+        script: |
+          xcodebuild clean -workspace MyApp.xcworkspace \
+            -scheme MyApp \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath $CM_BUILD_DIR/MyApp.xcarchive archive
+      - name: Export .ipa
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath $CM_BUILD_DIR/MyApp.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath $CM_BUILD_DIR/build/ipa
     artifacts:
       - build/ipa/*.ipa
     publishing:
