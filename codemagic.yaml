@@ -46,7 +46,7 @@ workflows:
            DEVELOPMENT_TEAM=QMCS3QNWSP \
            CODE_SIGN_STYLE=Manual \
            CODE_SIGN_IDENTITY="Apple Distribution" \
-           PROVISIONING_PROFILE_SPECIFIER="Mehdi"
+           PROVISIONING_PROFILE_SPECIFIER="Mehdi3"
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
