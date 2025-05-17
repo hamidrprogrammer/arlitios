@@ -15,6 +15,8 @@ workflows:
         APP_STORE_APPLE_ID: 6738909278
 
     scripts:
+      - name: Set up code signing settings on Xcode project
+        script: xcode-project use-profiles
 
       - name: Increment build number
 
