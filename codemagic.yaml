@@ -1,24 +1,25 @@
 workflows:
   ios-workflow:
     name: iOS Build for TestFlight
+    instance_type: mac_mini_m1
     integrations:
-      app_store_connect: Mehdi  # اسمی که توی Codemagic برای API Key گذاشتی
+      app_store_connect: Mehdi
     environment:
       ios_signing:
-        distribution_type: app_store  # برای TestFlight باید app_store باشه
+        distribution_type: app_store
         bundle_identifier: com.hamid.arkit.new
+        auth: app_store_connect  # Required for automatic signing
     scripts:
-      - name: تنظیم امضای خودکار
+      - name: Set Up Automatic Signing
         script: |
+          xcode-project use-profiles
           xcode-project set-code-sign-style \
-            --project "ios/arkitevideo.xcodeproj" \  # اسم پروژه‌ات رو بذار (مثلاً ios/MyApp.xcodeproj)
-            --style "Automatic"
-      - name: ساخت IPA
+            --project "ios/arkitevideo.xcodeproj" \
+            --code_sign_style "Automatic"
+
+      - name: Build IPA
         script: |
           xcode-project build-ipa \
-            --project "ios/arkitevideo.xcodeproj" \  # اسم پروژه‌ات
-            --scheme "arkitevideo" \  # اسم scheme پروژه‌ات (توی Xcode قابل دیدنه)
+            --project "ios/arkitevideo.xcodeproj" \
+            --scheme "arkitevideo" \
             --archive-xcargs "-allowProvisioningUpdates"
-    artifacts:
-      - build/ios/ipa/*.ipa
-   
