@@ -1,41 +1,42 @@
 workflows:
-  ios-workflow:
-    name: iOS Build and Distribute
+  ios-testflight:
+    name: iOS Build & Upload to TestFlight
+    max_build_duration: 60
     environment:
-      xcode: latest
       vars:
-        APP_STORE_CONNECT_ISSUER_ID: 5f7e640c-e4a7-4e32-b364-631385816275
-        APP_STORE_CONNECT_KEY_IDENTIFIER: 6N7V86QLV3
-        APP_STORE_CONNECT_PRIVATE_KEY: |
-          -----BEGIN PRIVATE KEY-----
-          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgVTrKgSPCIw/2xJzt
-          BBeB4117CDUayqS1jZMuJInIlvSgCgYIKoZIzj0DAQehRANCAATRLnxH+3vjitpS
-          CJlYtKPUu0doVsLRxIPmmVVcjUGETPFYTuL09JQ5bvxRjn9VRkMdVWyIc4/bu18U
-          QVGrpru+
-          -----END PRIVATE KEY-----
+        APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        APP_STORE_CONNECT_API_KEY_P8: ${{ secrets.APP_STORE_CONNECT_API_KEY_P8 }}
+      xcode: latest
+      cocoapods: default
+      ruby: default
     scripts:
       - name: Install dependencies
         script: |
-          gem install cocoapods
-          pod install
-      - name: Build archive
+          if [ -f "Podfile" ]; then
+            pod install
+          fi
+      - name: Build and archive app
         script: |
-          xcodebuild clean -workspace MyApp.xcworkspace \
-            -scheme MyApp \
-            -configuration Release \
+          xcodebuild clean archive \
+            -project arkitevideo.xcodeproj \
+            -scheme arkitevideo \
             -sdk iphoneos \
-            -archivePath $CM_BUILD_DIR/MyApp.xcarchive archive
-      - name: Export .ipa
+            -configuration Release \
+            -archivePath $CM_BUILD_DIR/build/arkitevideo.xcarchive \
+            -allowProvisioningUpdates
+      - name: Export IPA
         script: |
           xcodebuild -exportArchive \
-            -archivePath $CM_BUILD_DIR/MyApp.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath $CM_BUILD_DIR/build/ipa
-    artifacts:
-      - build/ipa/*.ipa
-    publishing:
-      app_store_connect:
-        bundle_id: "com.ashen.testapp"
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+            -archivePath $CM_BUILD_DIR/build/arkitevideo.xcarchive \
+            -exportPath $CM_BUILD_DIR/build/export \
+            -exportOptionsPlist ExportOptions.plist
+      - name: Upload to TestFlight
+        script: |
+          echo "$APP_STORE_CONNECT_API_KEY_P8" > AuthKey.p8
+          gem install fastlane
+          fastlane pilot upload \
+            --ipa $CM_BUILD_DIR/build/export/*.ipa \
+            --api_key_path ./AuthKey.p8 \
+            --api_key_id "$APP_STORE_CONNECT_KEY_ID" \
+            --issuer_id "$APP_STORE_CONNECT_ISSUER_ID"
