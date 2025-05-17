@@ -44,9 +44,8 @@ workflows:
            archive \
            COMPILER_INDEX_STORE_ENABLE=NO \
            DEVELOPMENT_TEAM=HNJ72PLF7A \
-           CODE_SIGN_STYLE=Manual \
-           CODE_SIGN_IDENTITY="Apple Development" \
-           PROVISIONING_PROFILE_SPECIFIER="Mehdi3"
+           CODE_SIGN_STYLE=Auto 
+           
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
