@@ -1,6 +1,6 @@
 workflows:
   ios-workflow:
-    name: Custom Workflow
+    name: Manual Archive Workflow
     integrations:
       app_store_connect: codemagic
     environment:
@@ -10,29 +10,45 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.hamid.arkit.new
     scripts:
-      - name: Set up code signing settings on Xcode project
+      - name: Set up code signing
         script: |
           xcode-project use-profiles \
-            --project "/Users/builder/clone/arkitevideo.xcodeproj"
+            --project "arkitevideo.xcodeproj"
 
-      - name: Verify schemes & dump Build Settings
+      - name: Archive App for iOS
         script: |
-          cd /Users/builder/clone
-          xcodebuild -list \
-            -project arkitevideo.xcodeproj
-          xcodebuild \
-            -project arkitevideo.xcodeproj \
-            -scheme arkitevideo \
+          ARCHIVE_PATH="/Users/builder/clone/build/ios/xcarchive/arkitevideo.xcarchive"
+          xcodebuild archive \
+            -project "arkitevideo.xcodeproj" \
+            -scheme "arkitevideo" \
             -sdk iphoneos \
-            -showBuildSettings
+            -archivePath "$ARCHIVE_PATH" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            DEVELOPMENT_TEAM=QMCS3QNWSP \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            | tee /tmp/xcodebuild_logs/archive.log
 
-      - name: Build App (.ipa)
+      - name: Export IPA from Archive
         script: |
-          cd /Users/builder/clone
-          xcode-project build-ipa \
-            --project "arkitevideo.xcodeproj" \
-            --scheme "arkitevideo" \
-            --xcargs "-sdk iphoneos"
+          EXPORT_OPTIONS_PLIST="/Users/builder/exportOptions.plist"
+          cat <<EOF > $EXPORT_OPTIONS_PLIST
+          {
+            "method": "app-store",
+            "teamID": "QMCS3QNWSP",
+            "signingStyle": "manual",
+            "stripSwiftSymbols": true,
+            "compileBitcode": true,
+            "destination": "export",
+            "manageAppVersionAndBuildNumber": false
+          }
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath "/Users/builder/clone/build/ios/xcarchive/arkitevideo.xcarchive" \
+            -exportPath "/Users/builder/clone/build/ios/ipa" \
+            -exportOptionsPlist "$EXPORT_OPTIONS_PLIST" \
+            | tee /tmp/xcodebuild_logs/export.log
 
     artifacts:
       - build/ios/ipa/*.ipa
