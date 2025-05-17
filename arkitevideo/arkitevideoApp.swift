@@ -12,12 +12,12 @@ struct MediaResponse: Codable {
 }
 
 struct MediaData: Codable {
-     let state: Int
+    let state: Int
     let dataContent: [MediaItemRaw]
 }
 
 struct MediaItemRaw: Codable {
-   let clubId: Int
+    let clubId: Int
     let adminId: Int
     let name: String
     let video: String
@@ -83,7 +83,6 @@ class ARViewController: UIViewController, ARSCNViewDelegate {
     private var thumbnails: [UIImage] = []
 
     init() {
-        // Layout for bottom thumbnail bar
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         layout.itemSize = CGSize(width: 80, height: 80)
@@ -207,10 +206,9 @@ class ARViewController: UIViewController, ARSCNViewDelegate {
             do {
                 let decoded = try JSONDecoder().decode(MediaResponse.self, from: data)
                 let filtered = decoded.data.dataContent
-                    .filter { $0.type == "video" }
+                    .filter { $0.type == "video" && !$0.image.isEmpty && !$0.video.isEmpty }
                     .compactMap { raw -> MediaItem? in
-                        guard let img = raw.image, let vid = raw.video,
-                              let imgURL = URL(string: img), let vidURL = URL(string: vid) else {
+                        guard let imgURL = URL(string: raw.image), let vidURL = URL(string: raw.video) else {
                             return nil
                         }
                         return MediaItem(imageUrl: imgURL, videoUrl: vidURL)
