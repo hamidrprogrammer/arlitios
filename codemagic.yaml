@@ -31,9 +31,11 @@ workflows:
           agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
       - name: Build ipa for distribution
         script: | 
-          xcode-project build-ipa \
-            --workspace "arkitevideo.xcodeproj" \
-            --scheme "arkitevideo"
+          xcodebuild -project arkitevideo.xcodeproj \
+           -scheme arkitevideo \
+           -configuration Release \
+           -archivePath ./build/arkitevideo.xcarchive \
+           archive
 
 
     
