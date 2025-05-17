@@ -1,29 +1,25 @@
 workflows:
-    ios-workflow:
-        name: Custom Workflow
-        environment:
-            groups:
-                - admin
-        scripts:
-            - name: Set up keychain to be used for code signing using Codemagic CLI 'keychain' command
-              script: keychain initialize
-            - name: Fetch signing files
-              script: |
-                app-store-connect fetch-signing-files "com.hamid.arkit.new" \
-                --type IOS_APP_STORE \
-                
-            - name: Set up signing certificate
-              script: keychain add-certificates
-            - name: Set up code signing settings on Xcode project
-              script: xcode-project use-profiles
-            - name: Build App
-              script: xcode-project build-ipa --workspace "arkitevideo.xcodeproj" --scheme "arkitevideo"
-        artifacts:
-            - build/ios/ipa/*.ipa
-            - /tmp/xcodebuild_logs/*.log
-            - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**.*.dSYM
-        publishing:
-            app_store_connect:
-                api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-                key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-                issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+  ios-workflow:
+    name: Custom Workflow
+    integrations:
+      app_store_connect: $APP_STORE_CONNECT_PRIVATE_KEY
+    environment:
+      groups:
+        - admin
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.hamid.arkit.new
+    scripts:
+      - name: Set up code signing settings on Xcode project
+        script: xcode-project use-profiles
+      - name: Build App
+        script: xcode-project build-ipa --workspace "arkitevideo.xcodeproj" --scheme "arkitevideo"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**.*.dSYM
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
