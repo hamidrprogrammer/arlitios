@@ -28,8 +28,6 @@ workflows:
 
           agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
 
-      - name: Build ipa for distribution
 
-      script: | 
 
-        # build command
+    
