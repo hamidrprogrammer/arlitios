@@ -1,33 +1,30 @@
 workflows:
-  ios-distribute:
-    name: iOS Build and Distribute
+  ios-workflow:
+    name: iOS Workflow
     environment:
       vars:
-        XCODE_PROJECT: "arkitevideo.xcodeproj"
-        XCODE_SCHEME: "arkitevideo"
+        XCODE_WORKSPACE: "ios/arkitevideo.xcodeproj"  # Updated to .xcodeproj
+        XCODE_SCHEME: "arkitevideo"                   # Verify this in Xcode
+        APP_STORE_APPLE_ID: "1234567890"             # Replace with your App Store Apple ID
       xcode: latest
+    integrations:
+      app_store_connect: appstore_connect_key        # Replace with your API key reference name
     scripts:
-      - name: Set build number from Git
+      - name: Increment Build Number
         script: |
+          #!/bin/sh
           cd $CM_BUILD_DIR
-          agvtool new-version -all $(($(git rev-list --count HEAD) + 1))
-
-      - name: Build IPA
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
+          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+      - name: Build IPA for Distribution
         script: |
           xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
+            --project "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
-            --export-options-plist exportOptions.plist
-
+            --export-options '{"testFlightInternalTestingOnly": true}'
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
-
     publishing:
-      email:
-        recipients:
-          - your@email.com
-        notify:
-          success: true
-          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
