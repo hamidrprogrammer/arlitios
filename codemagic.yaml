@@ -21,7 +21,4 @@ workflows:
             --archive-xcargs "-allowProvisioningUpdates"
     artifacts:
       - build/ios/ipa/*.ipa
-    publishing:
-      app_store_connect:
-        api_key: codemagic  # همون اسم API Key
-        submit_to_testflight: true
+   
