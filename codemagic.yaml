@@ -1,19 +1,35 @@
 workflows:
-  ios-native:
-  environment:
-    vars:
-      BUNDLE_ID: "com.hamid.arkit.new"
-      XCODE_WORKSPACE: "arkitevideo.xcodeproj" # <-- Name of your Xcode workspace
-      XCODE_SCHEME: "arkitevideo" # <-- Name of your Xcode scheme
-scripts:
-  # ...
-  - name: Build ipa for distribution
-    script: | 
-      xcode-project build-ipa \
-        --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" \
-        --scheme "$XCODE_SCHEME"
-artifacts:
-  - build/ios/ipa/*.ipa
-  - /tmp/xcodebuild_logs/*.log
-  - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
-  - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
+  ios-workflow:
+
+    name: iOS Workflow
+
+    integrations:
+
+      app_store_connect: codemagic
+
+    environment:
+
+      vars:
+
+        APP_STORE_APPLE_ID: 6738909278
+
+    scripts:
+
+      - name: Increment build number
+
+        script: | 
+
+          #!/bin/sh
+
+          cd $CM_BUILD_DIR
+
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
+
+          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+
+      - name: Build ipa for distribution
+
+      script: | 
+
+        # build command
