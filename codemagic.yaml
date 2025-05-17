@@ -3,15 +3,6 @@ workflows:
     name: iOS Build and Distribute
     environment:
       xcode: latest
-      vars:
-        BUNDLE_ID: "com.ashen.testapp"
-        APP_STORE_CONNECT_ISSUER_ID: 5f7e640c-e4a7-4e32-b364-631385816275
-        APP_STORE_CONNECT_KEY_IDENTIFIER: 6N7V86QLV3
-        APP_STORE_CONNECT_PRIVATE_KEY: |workflows:
-  ios-workflow:
-    name: iOS Build and Distribute
-    environment:
-      xcode: latest
     scripts:
       - name: Install dependencies
         script: |
@@ -35,39 +26,6 @@ workflows:
     publishing:
       app_store_connect:
         bundle_id: "com.ashen.testapp"
-        api_key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        private_key: $APP_STORE_CONNECT_PRIVATE_KEY
-
-          -----BEGIN PRIVATE KEY-----
-          MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgVTrKgSPCIw/2xJzt
-          BBeB4117CDUayqS1jZMuJInIlvSgCgYIKoZIzj0DAQehRANCAATRLnxH+3vjitpS
-          CJlYtKPUu0doVsLRxIPmmVVcjUGETPFYTuL09JQ5bvxRjn9VRkMdVWyIc4/bu18U
-          QVGrpru+
-          -----END PRIVATE KEY-----
-    scripts:
-      - name: Install dependencies
-        script: |
-          gem install cocoapods
-          pod install
-      - name: Build archive
-        script: |
-          xcodebuild clean -workspace MyApp.xcworkspace \
-            -scheme MyApp \
-            -configuration Release \
-            -sdk iphoneos \
-            -archivePath $CM_BUILD_DIR/MyApp.xcarchive archive
-      - name: Export .ipa
-        script: |
-          xcodebuild -exportArchive \
-            -archivePath $CM_BUILD_DIR/MyApp.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath $CM_BUILD_DIR/build/ipa
-    artifacts:
-      - build/ipa/*.ipa
-    publishing:
-      app_store_connect:
-        bundle_id: $BUNDLE_ID
         api_key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         private_key: $APP_STORE_CONNECT_PRIVATE_KEY
