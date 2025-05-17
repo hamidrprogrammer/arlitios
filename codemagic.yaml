@@ -43,7 +43,7 @@ workflows:
            -archivePath /Users/builder/clone/build/ios/xcarchive/arkitevideo.xcarchive \
            archive \
            COMPILER_INDEX_STORE_ENABLE=NO \
-           DEVELOPMENT_TEAM=HNJ72PLF7A \
+           DEVELOPMENT_TEAM=QMCS3QNWSP \
            CODE_SIGN_STYLE=Auto 
            
     artifacts:
